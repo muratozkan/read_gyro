@@ -6,7 +6,7 @@
 
 // Calibration 
 #define CALIBRATION_SAMPLES         512U
-#define CALIBRATION_STEP            1024U
+#define CALIBRATION_STEP            1024
 
 // Gyro
 #define GYRO_SENSITIVITY_FS_250     131 // per degree / second
@@ -51,7 +51,8 @@ class Attitude6D {
         // calibration helpers
         void setOffsets(int16_t offsets[]);
         void sampleAverage(int16_t means[], uint16_t samples);
-
+        
+        int16_t buffer[];
         bool initialized;
 };
 
