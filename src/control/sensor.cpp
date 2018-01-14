@@ -1,9 +1,6 @@
 #include "sensor.h"
 
-Attitude6D::Attitude6D() {
-}
-
-bool Attitude6D::initialize() {
+bool IMU6D::initialize() {
     mpu.initialize();
 
     mpu.setFullScaleAccelRange(ACCEL_FS_RANGE);
@@ -12,11 +9,11 @@ bool Attitude6D::initialize() {
     return initialized;
 }
 
-bool Attitude6D::isInitialized() {
+bool IMU6D::isInitialized() {
     return initialized;
 }
 
-void Attitude6D::setOffsets(int16_t offsets[]) {
+void IMU6D::setOffsets(int16_t offsets[]) {
     mpu.setXAccelOffset(offsets[0]);
     mpu.setYAccelOffset(offsets[1]);
     mpu.setZAccelOffset(offsets[2]);
@@ -26,8 +23,8 @@ void Attitude6D::setOffsets(int16_t offsets[]) {
     mpu.setZGyroOffset(offsets[5]);
 }
 
-void Attitude6D::calibrate() {
-    #ifdef ATTITUDE_SERIAL_DEBUG
+void IMU6D::calibrate() {
+    #ifdef IMU6D_SERIAL_DEBUG
     Serial << "ao:" << mpu.getXAccelOffset() << ", " << mpu.getYAccelOffset() << ", " << mpu.getZAccelOffset() << endl;
     Serial << "go:" << mpu.getXGyroOffset() << ", " << mpu.getYGyroOffset() << ", " << mpu.getZGyroOffset() << endl;  
     #endif
@@ -55,17 +52,13 @@ void Attitude6D::calibrate() {
 
     setOffsets(offsets);
 
-    #ifdef ATTITUDE_SERIAL_DEBUG
+    #ifdef IMU6D_SERIAL_DEBUG
     Serial << "ao:" << mpu.getXAccelOffset() << ", " << mpu.getYAccelOffset() << ", " << mpu.getZAccelOffset() << endl;
     Serial << "go:" << mpu.getXGyroOffset() << ", " << mpu.getYGyroOffset() << ", " << mpu.getZGyroOffset() << endl;  
     #endif
 }
 
-MPU6050 Attitude6D::getMPU() {
-    return mpu;
-}
-
-void Attitude6D::getMotion(float_t rot[], float_t rot_d[]) {
+void IMU6D::getMotion(float_t rot[], float_t rot_d[]) {
     mpu.getMotion6(&buffer[0], &buffer[1], &buffer[2], &buffer[3], &buffer[4], &buffer[5]);
 
     rot[0] = (float_t) buffer[0] / ACCEL_SENSITIVITY;
@@ -77,11 +70,11 @@ void Attitude6D::getMotion(float_t rot[], float_t rot_d[]) {
     rot_d[2] = (float_t) buffer[5] / GYRO_SENSITIVITY;
 }
 
-float_t Attitude6D::getTemperatureCelcius() {
+float_t IMU6D::getTemperatureCelcius() {
     return (float) mpu.getTemperature() / TEMP_CONSTANT + TEMP_BIAS;
 }
 
-void Attitude6D::sampleAverage(int16_t means[], uint16_t samples) {
+void IMU6D::sampleAverage(int16_t means[], uint16_t samples) {
     long totals[] = {0L, 0L, 0L, 0L, 0L, 0L}; 
     for (uint16_t n = 0; n < samples; n++) {
         mpu.getMotion6(&buffer[0], &buffer[1], &buffer[2], &buffer[3], &buffer[4], &buffer[5]);

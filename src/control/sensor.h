@@ -24,20 +24,20 @@
 #define TEMP_CONSTANT               340
 #define TEMP_BIAS                   36.53
 
-// Serial Debug - comment / uncomment to disable / enable
-#define ATTITUDE_SERIAL_DEBUG
-
-#ifdef ATTITUDE_SERIAL_DEBUG
+// Serial Debug
+#ifdef IMU6D_SERIAL_DEBUG
     #include <Streaming.h>
 #endif
 
-class Attitude6D {
+class IMU6D {
     public:
-        Attitude6D();
+        IMU6D() {
+        }
+
         bool initialize();
         bool isInitialized();
         void calibrate();
-        MPU6050 getMPU();
+
         void getMotion(float_t acc[], float_t rot[]);
         float_t getTemperatureCelcius();
     private:
@@ -52,8 +52,8 @@ class Attitude6D {
         void setOffsets(int16_t offsets[]);
         void sampleAverage(int16_t means[], uint16_t samples);
         
-        int16_t buffer[];
-        bool initialized;
+        int16_t buffer[6];
+        bool initialized = false;
 };
 
 #endif
