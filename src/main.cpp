@@ -3,6 +3,7 @@
 // for both classes must be in the include path of your project
 #include "I2Cdev.h"
 #include "control/sensor.h"
+#include "control/filter.h"
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
@@ -18,9 +19,10 @@
 #define LED_PIN 0
 bool blinkState = false;
 
-unsigned long lastMillis;
+unsigned long lastSensorReadMillis, lastOutputMillis;
 
 IMU6D imu;
+Complementary filter;
 
 void initAttitude() {
     // initialize device
@@ -57,6 +59,9 @@ void setup() {
 
     Serial.begin(115200);
     initAttitude();
+
+    lastOutputMillis = millis();
+    lastSensorReadMillis = lastOutputMillis;
 }
 
 void loop() {
@@ -69,20 +74,30 @@ void loop() {
     */
     float_t accel[3];
     float_t rot[3];
+    float_t attitude[3];
 
     unsigned long currentMillis = millis();
-    if (lastMillis == 0L || (currentMillis - lastMillis) >= 500L) {
-        lastMillis = currentMillis;
-
+    if (currentMillis - lastSensorReadMillis >= 10L) {      // read sensors @ 100Hz
         imu.getMotion(accel, rot);
+        filter.filter(attitude, accel, rot, currentMillis - lastSensorReadMillis);
 
+        lastSensorReadMillis = currentMillis;
+    }
+
+    currentMillis = millis();
+    if (currentMillis - lastOutputMillis >= 100L) {
         // display comma-separated accel/gyro x/y/z values
-        Serial << "a/g: " << accel[0] << ", " << accel[1] << ", " << accel[2] << "; " <<
+
+        Serial << "a/g: " << _FLOAT(accel[0], 4) << ", " << _FLOAT(accel[1], 4) << ", " << _FLOAT(accel[2], 4) << "; " <<
                             rot[0] << ", " << rot[1] << ", " << rot[2] << endl;
+        Serial << "fr: " << attitude[0] << ", " << attitude[1] << ", " << attitude[2] << endl;
+        Serial.flush();
         // Serial << "t: " << temp << endl;
         
         // blink LED to indicate activity
         blinkState = !blinkState;
         digitalWrite(LED_PIN, blinkState);
+
+        lastOutputMillis = currentMillis;
     }
 }
